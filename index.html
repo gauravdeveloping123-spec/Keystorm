@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Typing Association Game</title>
+<style>
+    :root {
+        --bg: #ffffff;
+        --text: #111111;
+        --accent: #0071e3;
+        --grey: #f5f5f7;
+        --radius: 14px;
+        --font-main: -apple-system, BlinkMacSystemFont, "San Francisco", 
+                     "Helvetica Neue", Helvetica, Arial, sans-serif;
+    }
+    body {
+        margin: 0;
+        background: var(--bg);
+        font-family: var(--font-main);
+        display: flex;
+        height: 100vh;
+        justify-content: center;
+        align-items: center;
+        user-select: none;
+    }
+    .container {
+        text-align: center;
+        width: 420px;
+        padding: 40px;
+        border-radius: var(--radius);
+        background: var(--grey);
+        box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+        animation: fadeIn 0.5s ease-in-out;
+    }
+    h1 {
+        margin: 0 0 20px;
+        font-size: 28px;
+        font-weight: 600;
+        letter-spacing: -0.5px;
+        color: var(--text);
+    }
+    .word-box {
+        margin: 20px 0;
+        font-size: 40px;
+        font-weight: 700;
+        color: var(--accent);
+        transition: 0.3s;
+    }
+    input {
+        width: 90%;
+        padding: 14px;
+        border: 2px solid transparent;
+        border-radius: var(--radius);
+        font-size: 18px;
+        margin-top: 18px;
+        outline: none;
+        background: #fff;
+        transition: border 0.25s;
+    }
+    input:focus {
+        border: 2px solid var(--accent);
+    }
+    .score {
+        margin-top: 20px;
+        font-size: 18px;
+        color: #333;
+    }
+    .good {
+        color: #28a745;
+        font-weight: 600;
+    }
+    .bad {
+        color: #d60a0a;
+        font-weight: 600;
+    }
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+</style>
+</head>
+<body>
+
+<div class="container">
+    <h1>Association Typing Game</h1>
+    <div class="word-box" id="wordBox">Boat</div>
+
+    <input type="text" id="inputBox" placeholder="Type a related word..." autofocus />
+
+    <div class="score">Score: <span id="score">0</span></div>
+</div>
+
+<script>
+    const words = [
+        "Boat", "Sun", "School", "Music", "Tree", "Phone", "Dog", "Beach", "Ice", "Fire",
+        "Rain", "Car", "Book", "Moon", "Food"
+    ];
+
+    const associations = {
+        "boat": ["sea","river","water","ship","row","sail"],
+        "sun": ["light","hot","day","yellow","sky"],
+        "school": ["study","teacher","class","students"],
+        "music": ["song","dance","sound","beat"],
+        "tree": ["leaf","wood","forest","nature"],
+        "phone": ["call","mobile","text","communication"],
+        "dog": ["pet","bark","animal","loyal"],
+        "beach": ["sand","sea","ocean","waves"],
+        "ice": ["cold","freeze","snow"],
+        "fire": ["hot","burn","flame"],
+        "rain": ["cloud","wet","water"],
+        "car": ["drive","road","vehicle"],
+        "book": ["read","pages","story"],
+        "moon": ["night","space","sky"],
+        "food": ["eat","hungry","fruit","meal"]
+    };
+
+    let score = 0;
+    let currentIndex = 0;
+
+    const wordBox = document.getElementById("wordBox");
+    const inputBox = document.getElementById("inputBox");
+    const scoreDisplay = document.getElementById("score");
+
+    function nextWord() {
+        currentIndex = (currentIndex + 1) % words.length;
+        wordBox.textContent = words[currentIndex];
+        inputBox.value = "";
+    }
+
+    inputBox.addEventListener("keydown", function(e) {
+        if (e.key === "Enter") {
+            const userAns = inputBox.value.toLowerCase().trim();
+            const main = words[currentIndex].toLowerCase();
+            
+            if (associations[main]?.includes(userAns)) {
+                score++;
+                wordBox.classList.add("good");
+                setTimeout(() => wordBox.classList.remove("good"), 300);
+            } else {
+                score--;
+                wordBox.classList.add("bad");
+                setTimeout(() => wordBox.classList.remove("bad"), 300);
+            }
+            
+            scoreDisplay.textContent = score;
+            nextWord();
+        }
+    });
+</script>
+
+</body>
+</html>
