@@ -21,7 +21,6 @@
         height: 100vh;
         justify-content: center;
         align-items: center;
-        user-select: none;
     }
     .container {
         text-align: center;
@@ -30,21 +29,18 @@
         border-radius: var(--radius);
         background: var(--grey);
         box-shadow: 0 8px 30px rgba(0,0,0,0.08);
-        animation: fadeIn 0.5s ease-in-out;
+        animation: fadeIn .4s ease;
     }
     h1 {
         margin: 0 0 20px;
         font-size: 28px;
         font-weight: 600;
-        letter-spacing: -0.5px;
-        color: var(--text);
     }
     .word-box {
-        margin: 20px 0;
         font-size: 40px;
         font-weight: 700;
         color: var(--accent);
-        transition: 0.3s;
+        margin-bottom: 20px;
     }
     input {
         width: 90%;
@@ -52,27 +48,14 @@
         border: 2px solid transparent;
         border-radius: var(--radius);
         font-size: 18px;
-        margin-top: 18px;
-        outline: none;
         background: #fff;
-        transition: border 0.25s;
+        transition: .25s;
     }
-    input:focus {
-        border: 2px solid var(--accent);
-    }
-    .score {
-        margin-top: 20px;
-        font-size: 18px;
-        color: #333;
-    }
-    .good {
-        color: #28a745;
-        font-weight: 600;
-    }
-    .bad {
-        color: #d60a0a;
-        font-weight: 600;
-    }
+    input:focus { border: 2px solid var(--accent); }
+    .score { margin-top: 20px; font-size: 18px; }
+    .good { color: #24a148 !important; }
+    .bad { color: #c41c1c !important; }
+
     @keyframes fadeIn {
         from { opacity: 0; transform: translateY(10px); }
         to { opacity: 1; transform: translateY(0); }
@@ -82,66 +65,61 @@
 <body>
 
 <div class="container">
-    <h1>Association Typing Game</h1>
-    <div class="word-box" id="wordBox">Boat</div>
-
-    <input type="text" id="inputBox" placeholder="Type a related word..." autofocus />
-
+    <h1>Word Association</h1>
+    <div class="word-box" id="wordBox">School</div>
+    <input type="text" id="inputBox" placeholder="Type related word..." autofocus />
     <div class="score">Score: <span id="score">0</span></div>
 </div>
 
 <script>
     const words = [
-        "Boat", "Sun", "School", "Music", "Tree", "Phone", "Dog", "Beach", "Ice", "Fire",
-        "Rain", "Car", "Book", "Moon", "Food"
+        "School","Boat","Dog","Food","Sun","Car","Rain",
+        "Music","Tree","Phone","Beach","Moon","Book","Fire"
     ];
 
-    const associations = {
-        "boat": ["sea","river","water","ship","row","sail"],
-        "sun": ["light","hot","day","yellow","sky"],
-        "school": ["study","teacher","class","students"],
-        "music": ["song","dance","sound","beat"],
-        "tree": ["leaf","wood","forest","nature"],
-        "phone": ["call","mobile","text","communication"],
-        "dog": ["pet","bark","animal","loyal"],
-        "beach": ["sand","sea","ocean","waves"],
-        "ice": ["cold","freeze","snow"],
-        "fire": ["hot","burn","flame"],
-        "rain": ["cloud","wet","water"],
-        "car": ["drive","road","vehicle"],
-        "book": ["read","pages","story"],
-        "moon": ["night","space","sky"],
-        "food": ["eat","hungry","fruit","meal"]
-    };
-
     let score = 0;
-    let currentIndex = 0;
-
+    let index = 0;
+    
     const wordBox = document.getElementById("wordBox");
     const inputBox = document.getElementById("inputBox");
     const scoreDisplay = document.getElementById("score");
 
     function nextWord() {
-        currentIndex = (currentIndex + 1) % words.length;
-        wordBox.textContent = words[currentIndex];
+        index = (index + 1) % words.length;
+        wordBox.textContent = words[index];
         inputBox.value = "";
     }
 
-    inputBox.addEventListener("keydown", function(e) {
+    async function checkWord(user, main) {
+        const url = `https://api.datamuse.com/words?ml=${main}&max=30`;
+        const url2 = `https://api.datamuse.com/words?rel_trg=${main}&max=30`;
+
+        const fetch1 = await fetch(url).then(r => r.json());
+        const fetch2 = await fetch(url2).then(r => r.json());
+
+        const related = [...fetch1, ...fetch2].map(i => i.word.toLowerCase());
+
+        return related.includes(user);
+    }
+
+    inputBox.addEventListener("keydown", async (e) => {
         if (e.key === "Enter") {
-            const userAns = inputBox.value.toLowerCase().trim();
-            const main = words[currentIndex].toLowerCase();
+            const main = wordBox.textContent.toLowerCase();
+            const user = inputBox.value.toLowerCase().trim();
+            if (user === "") return;
+
+            const valid = await checkWord(user, main);
             
-            if (associations[main]?.includes(userAns)) {
+            if (valid) {
                 score++;
                 wordBox.classList.add("good");
-                setTimeout(() => wordBox.classList.remove("good"), 300);
+                setTimeout(()=> wordBox.classList.remove("good"), 250);
             } else {
                 score--;
                 wordBox.classList.add("bad");
-                setTimeout(() => wordBox.classList.remove("bad"), 300);
+                setTimeout(()=> wordBox.classList.remove("bad"), 250);
             }
-            
+
             scoreDisplay.textContent = score;
             nextWord();
         }
